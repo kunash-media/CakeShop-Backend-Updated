@@ -1,13 +1,11 @@
 package com.cs.cakeshop.repository;
 
-
-import com.cs.cakeshop.entity.Users;
+import com.cs.cakeshop.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 @Repository
-public interface UsersRepository extends JpaRepository<Users, Long> {
-    boolean existsByEmail(String email);
-    boolean existsByUserId(String userId);
-    Users findByUserId(String userId);
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    Optional<UserEntity> findByEmail(String email);
 }

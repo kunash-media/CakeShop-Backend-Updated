@@ -3,19 +3,16 @@ package com.cs.cakeshop.service.serviceImpl;
 import com.cs.cakeshop.Dto.request.ProductRequestDto;
 import com.cs.cakeshop.Dto.response.ProductResponseDto;
 import com.cs.cakeshop.entity.ProductEntity;
+import com.cs.cakeshop.enums.ProductType;
 import com.cs.cakeshop.repository.ProductRepository;
 import com.cs.cakeshop.service.ProductService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -23,154 +20,156 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
-    public ProductResponseDto createProduct(ProductRequestDto productRequestDto,
-                                            MultipartFile basicImage,
-                                            MultipartFile withOrchidsImage,
+    public ProductResponseDto createProduct(ProductRequestDto requestDto,
                                             MultipartFile productImage,
-                                            List<MultipartFile> productSubImages) {
-
-        ProductEntity productEntity = convertRequestDtoToEntity(productRequestDto);
+                                            MultipartFile subImage1,
+                                            MultipartFile subImage2,
+                                            MultipartFile subImage3,
+                                            MultipartFile video) {
+        ProductEntity entity = new ProductEntity();
+        mapDtoToEntity(requestDto, entity);
 
         try {
-            // Handle images
-            if (basicImage != null && !basicImage.isEmpty()) {
-                productEntity.setBasicImage(basicImage.getBytes());
-            }
-            if (withOrchidsImage != null && !withOrchidsImage.isEmpty()) {
-                productEntity.setWithOrchidsImage(withOrchidsImage.getBytes());
-            }
             if (productImage != null && !productImage.isEmpty()) {
-                productEntity.setProductImage(productImage.getBytes());
+                entity.setProductImage(productImage.getBytes());
             }
-            if (productSubImages != null && !productSubImages.isEmpty()) {
-                byte[] subImagesBytes = convertMultipleFilesToBytes(productSubImages);
-                productEntity.setProductSubImages(subImagesBytes);
+            if (subImage1 != null && !subImage1.isEmpty()) {
+                entity.setSubImage1(subImage1.getBytes());
             }
-
+            if (subImage2 != null && !subImage2.isEmpty()) {
+                entity.setSubImage2(subImage2.getBytes());
+            }
+            if (subImage3 != null && !subImage3.isEmpty()) {
+                entity.setSubImage3(subImage3.getBytes());
+            }
+            if (video != null && !video.isEmpty()) {
+                entity.setVideo(video.getBytes());
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Error processing images: " + e.getMessage());
+            throw new RuntimeException("Error processing files", e);
         }
 
-        ProductEntity savedEntity = productRepository.save(productEntity);
-        return convertEntityToResponseDto(savedEntity);
+        ProductEntity savedEntity = productRepository.save(entity);
+        return mapEntityToDto(savedEntity);
     }
 
     @Override
     public ProductResponseDto getProductById(Long id) {
-        Optional<ProductEntity> productEntity = productRepository.findById(id);
-        if (productEntity.isPresent()) {
-            return convertEntityToResponseDto(productEntity.get());
-        } else {
-            throw new RuntimeException("Product not found with id: " + id);
-        }
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return mapEntityToDto(entity);
     }
 
     @Override
     public List<ProductResponseDto> getAllProducts() {
-        List<ProductEntity> products = productRepository.findAll();
-        List<ProductResponseDto> responseDtos = new ArrayList<>();
-
-        for (ProductEntity product : products) {
-            responseDtos.add(convertEntityToResponseDto(product));
-        }
-
-        return responseDtos;
+        return productRepository.findAll().stream()
+                .map(this::mapEntityToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public ProductResponseDto updateProduct(Long id, ProductRequestDto productRequestDto,
-                                            MultipartFile basicImage,
-                                            MultipartFile withOrchidsImage,
+    public List<ProductResponseDto> getProductsByType(ProductType type) {
+        return productRepository.findByType(type).stream()
+                .map(this::mapEntityToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ProductResponseDto updateProduct(Long id, ProductRequestDto requestDto,
                                             MultipartFile productImage,
-                                            List<MultipartFile> productSubImages) {
+                                            MultipartFile subImage1,
+                                            MultipartFile subImage2,
+                                            MultipartFile subImage3,
+                                            MultipartFile video) {
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        Optional<ProductEntity> existingProduct = productRepository.findById(id);
-        if (!existingProduct.isPresent()) {
-            throw new RuntimeException("Product not found with id: " + id);
-        }
-
-        ProductEntity productEntity = existingProduct.get();
-        updateEntityFromRequestDto(productEntity, productRequestDto);
+        mapDtoToEntity(requestDto, entity);
 
         try {
-            // Update images if provided
-            if (basicImage != null && !basicImage.isEmpty()) {
-                productEntity.setBasicImage(basicImage.getBytes());
-            }
-            if (withOrchidsImage != null && !withOrchidsImage.isEmpty()) {
-                productEntity.setWithOrchidsImage(withOrchidsImage.getBytes());
-            }
             if (productImage != null && !productImage.isEmpty()) {
-                productEntity.setProductImage(productImage.getBytes());
+                entity.setProductImage(productImage.getBytes());
             }
-            if (productSubImages != null && !productSubImages.isEmpty()) {
-                byte[] subImagesBytes = convertMultipleFilesToBytes(productSubImages);
-                productEntity.setProductSubImages(subImagesBytes);
+            if (subImage1 != null && !subImage1.isEmpty()) {
+                entity.setSubImage1(subImage1.getBytes());
             }
-
+            if (subImage2 != null && !subImage2.isEmpty()) {
+                entity.setSubImage2(subImage2.getBytes());
+            }
+            if (subImage3 != null && !subImage3.isEmpty()) {
+                entity.setSubImage3(subImage3.getBytes());
+            }
+            if (video != null && !video.isEmpty()) {
+                entity.setVideo(video.getBytes());
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Error processing images: " + e.getMessage());
+            throw new RuntimeException("Error processing files", e);
         }
 
-        ProductEntity savedEntity = productRepository.save(productEntity);
-        return convertEntityToResponseDto(savedEntity);
+        ProductEntity updatedEntity = productRepository.save(entity);
+        return mapEntityToDto(updatedEntity);
     }
 
     @Override
     public void deleteProduct(Long id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("Product not found with id: " + id);
-        }
+        productRepository.deleteById(id);
     }
 
-    private ProductEntity convertRequestDtoToEntity(ProductRequestDto dto) {
-        ProductEntity entity = new ProductEntity();
-        updateEntityFromRequestDto(entity, dto);
-        return entity;
+    @Override
+    public byte[] getProductImage(Long id) {
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return entity.getProductImage();
     }
 
-    private void updateEntityFromRequestDto(ProductEntity entity, ProductRequestDto dto) {
+    @Override
+    public byte[] getSubImage1(Long id) {
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return entity.getSubImage1();
+    }
+
+    @Override
+    public byte[] getSubImage2(Long id) {
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return entity.getSubImage2();
+    }
+
+    @Override
+    public byte[] getSubImage3(Long id) {
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return entity.getSubImage3();
+    }
+
+    @Override
+    public byte[] getVideo(Long id) {
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return entity.getVideo();
+    }
+
+    private void mapDtoToEntity(ProductRequestDto dto, ProductEntity entity) {
         entity.setType(dto.getType());
         entity.setProductName(dto.getProductName());
         entity.setRatings(dto.getRatings());
         entity.setReviews(dto.getReviews());
         entity.setProductOldPrice(dto.getProductOldPrice());
         entity.setProductNewPrice(dto.getProductNewPrice());
-        entity.setProductDiscount(dto.getProductDiscount());
-        entity.setBasicTitle(dto.getBasicTitle());
-        entity.setBasicPrice(dto.getBasicPrice());
-        entity.setWithOrchidsTitle(dto.getWithOrchidsTitle());
-        entity.setWithOrchidsPrice(dto.getWithOrchidsPrice());
+        entity.setWeights(dto.getWeights());
+        entity.setWeightPrices(dto.getWeightPrices());
         entity.setNameOnCake(dto.getNameOnCake());
-        entity.setAddress(dto.getAddress());
+        entity.setOffers(dto.getOffers());
+        entity.setProductContains(dto.getProductContains());
         entity.setDescription(dto.getDescription());
+        entity.setCareInstructions(dto.getCareInstructions());
         entity.setSkuNumber(dto.getSkuNumber());
         entity.setNote(dto.getNote());
-
-        try {
-            if (dto.getWeight() != null) {
-                entity.setWeight(objectMapper.writeValueAsString(dto.getWeight()));
-            }
-            if (dto.getOffers() != null) {
-                entity.setOffers(objectMapper.writeValueAsString(dto.getOffers()));
-            }
-            if (dto.getProductContains() != null) {
-                entity.setProductContains(objectMapper.writeValueAsString(dto.getProductContains()));
-            }
-            if (dto.getCareInstructions() != null) {
-                entity.setCareInstructions(objectMapper.writeValueAsString(dto.getCareInstructions()));
-            }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting lists to JSON: " + e.getMessage());
-        }
     }
 
-    private ProductResponseDto convertEntityToResponseDto(ProductEntity entity) {
+    private ProductResponseDto mapEntityToDto(ProductEntity entity) {
         ProductResponseDto dto = new ProductResponseDto();
         dto.setId(entity.getId());
         dto.setType(entity.getType());
@@ -179,97 +178,20 @@ public class ProductServiceImpl implements ProductService {
         dto.setReviews(entity.getReviews());
         dto.setProductOldPrice(entity.getProductOldPrice());
         dto.setProductNewPrice(entity.getProductNewPrice());
-        dto.setProductDiscount(entity.getProductDiscount());
+        dto.setWeights(entity.getWeights());
+        dto.setWeightPrices(entity.getWeightPrices());
         dto.setNameOnCake(entity.getNameOnCake());
-        dto.setAddress(entity.getAddress());
+        dto.setOffers(entity.getOffers());
+        dto.setProductContains(entity.getProductContains());
         dto.setDescription(entity.getDescription());
+        dto.setCareInstructions(entity.getCareInstructions());
         dto.setSkuNumber(entity.getSkuNumber());
         dto.setNote(entity.getNote());
-
-        // Convert orchids data
-        ProductResponseDto.OrchidsDto orchids = new ProductResponseDto.OrchidsDto();
-        ProductResponseDto.BasicDto basic = new ProductResponseDto.BasicDto();
-        basic.setTitle(entity.getBasicTitle());
-        basic.setPrice(entity.getBasicPrice());
-        if (entity.getBasicImage() != null) {
-            basic.setImage("data:image/jpeg;base64," + Base64.getEncoder().encodeToString(entity.getBasicImage()));
-        }
-
-        ProductResponseDto.WithOrchidsDto withOrchidsDto = new ProductResponseDto.WithOrchidsDto();
-        withOrchidsDto.setTitle(entity.getWithOrchidsTitle());
-        withOrchidsDto.setPrice(entity.getWithOrchidsPrice());
-        if (entity.getWithOrchidsImage() != null) {
-            withOrchidsDto.setImage("data:image/jpeg;base64," + Base64.getEncoder().encodeToString(entity.getWithOrchidsImage()));
-        }
-
-        orchids.setBasic(basic);
-        orchids.setWithOrchids(withOrchidsDto);
-        dto.setOrchids(orchids);
-
-        // Convert main product image
-        if (entity.getProductImage() != null) {
-            dto.setProductImage("data:image/jpeg;base64," + Base64.getEncoder().encodeToString(entity.getProductImage()));
-        }
-
-        try {
-            // Convert JSON strings back to lists
-            if (entity.getWeight() != null) {
-                dto.setWeight(objectMapper.readValue(entity.getWeight(), List.class));
-            }
-            if (entity.getOffers() != null) {
-                dto.setOffers(objectMapper.readValue(entity.getOffers(), List.class));
-            }
-            if (entity.getProductContains() != null) {
-                dto.setProductContains(objectMapper.readValue(entity.getProductContains(), List.class));
-            }
-            if (entity.getCareInstructions() != null) {
-                dto.setCareInstructions(objectMapper.readValue(entity.getCareInstructions(), List.class));
-            }
-            if (entity.getProductSubImages() != null) {
-                List<String> subImages = convertBytesToBase64List(entity.getProductSubImages());
-                dto.setProductSubImages(subImages);
-            }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting JSON to lists: " + e.getMessage());
-        }
-
+        dto.setHasProductImage(entity.getProductImage() != null);
+        dto.setHasSubImage1(entity.getSubImage1() != null);
+        dto.setHasSubImage2(entity.getSubImage2() != null);
+        dto.setHasSubImage3(entity.getSubImage3() != null);
+        dto.setHasVideo(entity.getVideo() != null);
         return dto;
-    }
-
-    private byte[] convertMultipleFilesToBytes(List<MultipartFile> files) throws IOException {
-        List<byte[]> fileBytesList = new ArrayList<>();
-        for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                fileBytesList.add(file.getBytes());
-            }
-        }
-
-        try {
-            return objectMapper.writeValueAsBytes(fileBytesList);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error serializing multiple files: " + e.getMessage());
-        }
-    }
-
-    private List<String> convertBytesToBase64List(byte[] bytes) {
-        try {
-            List<byte[]> fileBytesList = objectMapper.readValue(bytes, List.class);
-            List<String> base64List = new ArrayList<>();
-            for (Object fileBytes : fileBytesList) {
-                if (fileBytes instanceof List) {
-                    List<Integer> byteList = (List<Integer>) fileBytes;
-                    byte[] byteArray = new byte[byteList.size()];
-                    for (int i = 0; i < byteList.size(); i++) {
-                        byteArray[i] = byteList.get(i).byteValue();
-                    }
-                    base64List.add("data:image/jpeg;base64," + Base64.getEncoder().encodeToString(byteArray));
-                }
-            }
-            return base64List;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error deserializing multiple files: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

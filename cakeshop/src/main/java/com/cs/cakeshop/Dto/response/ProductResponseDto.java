@@ -1,273 +1,97 @@
 package com.cs.cakeshop.Dto.response;
 
+import com.cs.cakeshop.enums.ProductType;
+
 import java.util.List;
 
 public class ProductResponseDto {
 
     private Long id;
-    private String type;
+    private ProductType type;
     private String productName;
     private Double ratings;
     private Integer reviews;
     private Double productOldPrice;
     private Double productNewPrice;
-    private String productDiscount;
-    private OrchidsDto orchids;
-    private List<Double> weight;
+    private List<String> weights;
+    private List<Double> weightPrices;
     private String nameOnCake;
-    private String address;
-    private List<String> offers;
-    private List<String> productContains;
+    private String offers;
+    private String productContains;
     private String description;
-    private List<String> careInstructions;
+    private String careInstructions;
     private String skuNumber;
     private String note;
-    private String productImage;
-    private List<String> productSubImages;
+    private boolean hasProductImage;
+    private boolean hasSubImage1;
+    private boolean hasSubImage2;
+    private boolean hasSubImage3;
+    private boolean hasVideo;
 
-    // Inner class for orchids
-    public static class OrchidsDto {
-        private BasicDto Basic;
-        private WithOrchidsDto WithOrchids;
-
-        public BasicDto getBasic() {
-            return Basic;
-        }
-
-        public void setBasic(BasicDto basic) {
-            Basic = basic;
-        }
-
-        public WithOrchidsDto getWithOrchids() {
-            return WithOrchids;
-        }
-
-        public void setWithOrchids(WithOrchidsDto withOrchids) {
-            WithOrchids = withOrchids;
-        }
-    }
-
-    public static class BasicDto {
-        private String image;
-        private String title;
-        private Double price;
-
-        public String getImage() {
-            return image;
-        }
-
-        public void setImage(String image) {
-            this.image = image;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public Double getPrice() {
-            return price;
-        }
-
-        public void setPrice(Double price) {
-            this.price = price;
-        }
-    }
-
-    public static class WithOrchidsDto {
-        private String image;
-        private String title;
-        private Double price;
-
-        public String getImage() {
-            return image;
-        }
-
-        public void setImage(String image) {
-            this.image = image;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public Double getPrice() {
-            return price;
-        }
-
-        public void setPrice(Double price) {
-            this.price = price;
-        }
-    }
-
-    // Default constructor
+    // Constructors
     public ProductResponseDto() {}
 
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public ProductType getType() { return type; }
+    public void setType(ProductType type) { this.type = type; }
 
-    public String getType() {
-        return type;
-    }
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+    public Double getRatings() { return ratings; }
+    public void setRatings(Double ratings) { this.ratings = ratings; }
 
-    public String getProductName() {
-        return productName;
-    }
+    public Integer getReviews() { return reviews; }
+    public void setReviews(Integer reviews) { this.reviews = reviews; }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
+    public Double getProductOldPrice() { return productOldPrice; }
+    public void setProductOldPrice(Double productOldPrice) { this.productOldPrice = productOldPrice; }
 
-    public Double getRatings() {
-        return ratings;
-    }
+    public Double getProductNewPrice() { return productNewPrice; }
+    public void setProductNewPrice(Double productNewPrice) { this.productNewPrice = productNewPrice; }
 
-    public void setRatings(Double ratings) {
-        this.ratings = ratings;
-    }
+    public List<String> getWeights() { return weights; }
+    public void setWeights(List<String> weights) { this.weights = weights; }
 
-    public Integer getReviews() {
-        return reviews;
-    }
+    public List<Double> getWeightPrices() { return weightPrices; }
+    public void setWeightPrices(List<Double> weightPrices) { this.weightPrices = weightPrices; }
 
-    public void setReviews(Integer reviews) {
-        this.reviews = reviews;
-    }
+    public String getNameOnCake() { return nameOnCake; }
+    public void setNameOnCake(String nameOnCake) { this.nameOnCake = nameOnCake; }
 
-    public Double getProductOldPrice() {
-        return productOldPrice;
-    }
+    public String getOffers() { return offers; }
+    public void setOffers(String offers) { this.offers = offers; }
 
-    public void setProductOldPrice(Double productOldPrice) {
-        this.productOldPrice = productOldPrice;
-    }
+    public String getProductContains() { return productContains; }
+    public void setProductContains(String productContains) { this.productContains = productContains; }
 
-    public Double getProductNewPrice() {
-        return productNewPrice;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setProductNewPrice(Double productNewPrice) {
-        this.productNewPrice = productNewPrice;
-    }
+    public String getCareInstructions() { return careInstructions; }
+    public void setCareInstructions(String careInstructions) { this.careInstructions = careInstructions; }
 
-    public String getProductDiscount() {
-        return productDiscount;
-    }
+    public String getSkuNumber() { return skuNumber; }
+    public void setSkuNumber(String skuNumber) { this.skuNumber = skuNumber; }
 
-    public void setProductDiscount(String productDiscount) {
-        this.productDiscount = productDiscount;
-    }
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
 
-    public OrchidsDto getOrchids() {
-        return orchids;
-    }
+    public boolean isHasProductImage() { return hasProductImage; }
+    public void setHasProductImage(boolean hasProductImage) { this.hasProductImage = hasProductImage; }
 
-    public void setOrchids(OrchidsDto orchids) {
-        this.orchids = orchids;
-    }
+    public boolean isHasSubImage1() { return hasSubImage1; }
+    public void setHasSubImage1(boolean hasSubImage1) { this.hasSubImage1 = hasSubImage1; }
 
-    public List<Double> getWeight() {
-        return weight;
-    }
+    public boolean isHasSubImage2() { return hasSubImage2; }
+    public void setHasSubImage2(boolean hasSubImage2) { this.hasSubImage2 = hasSubImage2; }
 
-    public void setWeight(List<Double> weight) {
-        this.weight = weight;
-    }
+    public boolean isHasSubImage3() { return hasSubImage3; }
+    public void setHasSubImage3(boolean hasSubImage3) { this.hasSubImage3 = hasSubImage3; }
 
-    public String getNameOnCake() {
-        return nameOnCake;
-    }
-
-    public void setNameOnCake(String nameOnCake) {
-        this.nameOnCake = nameOnCake;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public List<String> getOffers() {
-        return offers;
-    }
-
-    public void setOffers(List<String> offers) {
-        this.offers = offers;
-    }
-
-    public List<String> getProductContains() {
-        return productContains;
-    }
-
-    public void setProductContains(List<String> productContains) {
-        this.productContains = productContains;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public List<String> getCareInstructions() {
-        return careInstructions;
-    }
-
-    public void setCareInstructions(List<String> careInstructions) {
-        this.careInstructions = careInstructions;
-    }
-
-    public String getSkuNumber() {
-        return skuNumber;
-    }
-
-    public void setSkuNumber(String skuNumber) {
-        this.skuNumber = skuNumber;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    public String getProductImage() {
-        return productImage;
-    }
-
-    public void setProductImage(String productImage) {
-        this.productImage = productImage;
-    }
-
-    public List<String> getProductSubImages() {
-        return productSubImages;
-    }
-
-    public void setProductSubImages(List<String> productSubImages) {
-        this.productSubImages = productSubImages;
-    }
+    public boolean isHasVideo() { return hasVideo; }
+    public void setHasVideo(boolean hasVideo) { this.hasVideo = hasVideo; }
 }

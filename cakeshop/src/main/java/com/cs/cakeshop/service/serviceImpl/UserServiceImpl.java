@@ -1,113 +1,87 @@
 package com.cs.cakeshop.service.serviceImpl;
 
-import com.cs.cakeshop.Dto.GetAllUserDto;
-import com.cs.cakeshop.Dto.UserRegistrationDto;
-import com.cs.cakeshop.bcrypt.BcryptEncoderConfig;
-import com.cs.cakeshop.entity.Users;
-import com.cs.cakeshop.repository.UsersRepository;
-import com.cs.cakeshop.service.UsersService;
-import org.apache.coyote.BadRequestException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.cs.cakeshop.Dto.request.UserRequestDto;
+import com.cs.cakeshop.Dto.response.UserResponseDto;
+import com.cs.cakeshop.entity.UserEntity;
+import com.cs.cakeshop.repository.UserRepository;
+import com.cs.cakeshop.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class UsersServiceImpl implements UsersService {
-
-    private final UsersRepository usersRepository;
-    private final BcryptEncoderConfig passwordEncoder;
-    private static final Logger logger = LoggerFactory.getLogger(UsersServiceImpl.class);
+public class UserServiceImpl implements UserService {
 
     @Autowired
-    public UsersServiceImpl(UsersRepository usersRepository,
-                            BcryptEncoderConfig passwordEncoder) {
-        this.usersRepository = usersRepository;
-        this.passwordEncoder = passwordEncoder;
+    private UserRepository userRepository;
+
+    @Override
+    public UserResponseDto createUser(UserRequestDto userRequestDto) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setName(userRequestDto.getName());
+        userEntity.setEmail(userRequestDto.getEmail());
+        userEntity.setMobileNumber(userRequestDto.getMobileNumber());
+        userEntity.setPassword(userRequestDto.getPassword());
+        userEntity.setRole(userRequestDto.getRole());
+
+        UserEntity savedUser = userRepository.save(userEntity);
+        return convertToResponseDto(savedUser);
     }
 
     @Override
-    @Transactional
-    public Users createUser(UserRegistrationDto userData) throws BadRequestException {
-        // Validate email uniqueness
-        if (usersRepository.existsByEmail(userData.getEmail())) {
-            logger.error("Email already registered: {}", userData.getEmail());
-            throw new BadRequestException("Email already registered: " + userData.getEmail());
-        }
-
-        // Create new user
-        Users user = new Users();
-        user.setName(userData.getName());
-        user.setEmail(userData.getEmail());
-        user.setPassword(passwordEncoder.encode(userData.getPassword()));
-
-        // Set creation timestamp
-        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
-        user.setCreatedAt(now.format(formatter));
-
-        // Set default role if not provided
-        user.setRole(userData.getRole() != null ? userData.getRole() : "ROLE_USER");
-
-        // Generate and set user ID
-        user.setUserRepository(usersRepository); // Needed for ID generation
-
-        return usersRepository.save(user);
+    public UserResponseDto getUserById(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return convertToResponseDto(userEntity);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<GetAllUserDto> getAllUsers() {
-        return usersRepository.findAll().stream()
-                .map(this::convertToDto)
+    public UserResponseDto getUserByEmail(String email) {
+        UserEntity userEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return convertToResponseDto(userEntity);
+    }
+
+    @Override
+    public List<UserResponseDto> getAllUsers() {
+        List<UserEntity> users = userRepository.findAll();
+        return users.stream()
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    private GetAllUserDto convertToDto(Users user) {
-        return new GetAllUserDto(
-                user.getUserId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole()
-        );
+    @Override
+    public UserResponseDto updateUser(Long userId, UserRequestDto userRequestDto) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        userEntity.setName(userRequestDto.getName());
+        userEntity.setEmail(userRequestDto.getEmail());
+        userEntity.setMobileNumber(userRequestDto.getMobileNumber());
+        userEntity.setPassword(userRequestDto.getPassword());
+        userEntity.setRole(userRequestDto.getRole());
+
+        UserEntity updatedUser = userRepository.save(userEntity);
+        return convertToResponseDto(updatedUser);
     }
 
     @Override
-    @Transactional
-    public void updateUser(String userId, UserRegistrationDto userRegistrationDto) {
-        Users user = usersRepository.findByUserId(userId);
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "User not found with ID: " + userId);
+    public void deleteUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found with id: " + userId);
         }
+        userRepository.deleteById(userId);
+    }
 
-        // Update name if provided
-        if (userRegistrationDto.getName() != null &&
-                !userRegistrationDto.getName().isEmpty()) {
-            user.setName(userRegistrationDto.getName());
-        }
-
-        // Update role if provided
-        if (userRegistrationDto.getRole() != null &&
-                !userRegistrationDto.getRole().isEmpty()) {
-            user.setRole(userRegistrationDto.getRole());
-        }
-
-        // Update password if provided
-        if (userRegistrationDto.getPassword() != null &&
-                !userRegistrationDto.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userRegistrationDto.getPassword()));
-        }
-
-        usersRepository.save(user);
+    private UserResponseDto convertToResponseDto(UserEntity userEntity) {
+        return new UserResponseDto(
+                userEntity.getUserId(),
+                userEntity.getName(),
+                userEntity.getEmail(),
+                userEntity.getMobileNumber(),
+                userEntity.getRole()
+        );
     }
 }

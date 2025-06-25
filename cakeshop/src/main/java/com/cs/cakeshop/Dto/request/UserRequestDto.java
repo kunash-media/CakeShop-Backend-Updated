@@ -1,34 +1,17 @@
-package com.cs.cakeshop.entity;
+package com.cs.cakeshop.Dto.request;
 
-import jakarta.persistence.*;
+public class UserRequestDto {
 
-@Entity
-@Table(name = "users")
-public class UserEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-
-    @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = false)
     private String mobileNumber;
-
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
     private String role;
 
     // Constructors
-    public UserEntity() {}
+    public UserRequestDto() {}
 
-    public UserEntity(String name, String email, String mobileNumber, String password, String role) {
+    public UserRequestDto(String name, String email, String mobileNumber, String password, String role) {
         this.name = name;
         this.email = email;
         this.mobileNumber = mobileNumber;
@@ -37,9 +20,6 @@ public class UserEntity {
     }
 
     // Getters and Setters
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -55,4 +35,3 @@ public class UserEntity {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 }
-

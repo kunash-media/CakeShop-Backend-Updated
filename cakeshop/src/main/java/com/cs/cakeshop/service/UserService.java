@@ -1,16 +1,14 @@
 package com.cs.cakeshop.service;
 
-
+import com.cs.cakeshop.Dto.request.UserRequestDto;
+import com.cs.cakeshop.Dto.response.UserResponseDto;
 
 import java.util.List;
-
-import com.cs.cakeshop.Dto.GetAllUserDto;
-import com.cs.cakeshop.Dto.UserRegistrationDto;
-import com.cs.cakeshop.entity.Users;
-import org.apache.coyote.BadRequestException;
-
-public interface UsersService {
-    Users createUser(UserRegistrationDto userData) throws BadRequestException;
-    void updateUser(String userId, UserRegistrationDto userRegistrationDto);
-    List<GetAllUserDto> getAllUsers();
+public interface UserService {
+    UserResponseDto createUser(UserRequestDto userRequestDto);
+    UserResponseDto getUserById(Long userId);
+    UserResponseDto getUserByEmail(String email);
+    List<UserResponseDto> getAllUsers();
+    UserResponseDto updateUser(Long userId, UserRequestDto userRequestDto);
+    void deleteUser(Long userId);
 }
