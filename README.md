@@ -1,1 +1,1 @@
-"Product Card Updated code"
+"User and product card update"
