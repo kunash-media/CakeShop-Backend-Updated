@@ -1,9 +1,12 @@
 package com.cs.cakeshop.service.serviceImpl;
 
 import com.cs.cakeshop.Dto.request.ProductRequestDto;
+import com.cs.cakeshop.Dto.response.CategoryResponseDto;
 import com.cs.cakeshop.Dto.response.ProductResponseDto;
-import com.cs.cakeshop.entity.ProductEntity;
+import com.cs.cakeshop.entity.Category;
+import com.cs.cakeshop.entity.Product;
 import com.cs.cakeshop.enums.ProductType;
+import com.cs.cakeshop.repository.CategoryRepository;
 import com.cs.cakeshop.repository.ProductRepository;
 import com.cs.cakeshop.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,178 +26,242 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Override
-    public ProductResponseDto createProduct(ProductRequestDto requestDto,
-                                            MultipartFile productImage,
+    public ProductResponseDto createProduct(ProductRequestDto productDto,
+                                            MultipartFile mainImage,
                                             MultipartFile subImage1,
                                             MultipartFile subImage2,
                                             MultipartFile subImage3,
-                                            MultipartFile video) {
-        ProductEntity entity = new ProductEntity();
-        mapDtoToEntity(requestDto, entity);
+                                            MultipartFile subImage4) {
 
+        Product product = new Product();
+        mapDtoToEntity(productDto, product);
+
+        // Handle images
         try {
-            if (productImage != null && !productImage.isEmpty()) {
-                entity.setProductImage(productImage.getBytes());
+            if (mainImage != null && !mainImage.isEmpty()) {
+                product.setMainImage(mainImage.getBytes());
             }
             if (subImage1 != null && !subImage1.isEmpty()) {
-                entity.setSubImage1(subImage1.getBytes());
+                product.setSubImage1(subImage1.getBytes());
             }
             if (subImage2 != null && !subImage2.isEmpty()) {
-                entity.setSubImage2(subImage2.getBytes());
+                product.setSubImage2(subImage2.getBytes());
             }
             if (subImage3 != null && !subImage3.isEmpty()) {
-                entity.setSubImage3(subImage3.getBytes());
+                product.setSubImage3(subImage3.getBytes());
             }
-            if (video != null && !video.isEmpty()) {
-                entity.setVideo(video.getBytes());
+            if (subImage4 != null && !subImage4.isEmpty()) {
+                product.setSubImage4(subImage4.getBytes());
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error processing files", e);
+            throw new RuntimeException("Error processing image files", e);
         }
 
-        ProductEntity savedEntity = productRepository.save(entity);
-        return mapEntityToDto(savedEntity);
-    }
+        // Handle categories
+        if (productDto.getCategoryIds() != null && !productDto.getCategoryIds().isEmpty()) {
+            Set<Category> categories = new HashSet<>(categoryRepository.findAllById(productDto.getCategoryIds()));
+            product.setCategories(categories);
+        }
 
-    @Override
-    public ProductResponseDto getProductById(Long id) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return mapEntityToDto(entity);
+        Product savedProduct = productRepository.save(product);
+        return mapEntityToDto(savedProduct);
     }
 
     @Override
     public List<ProductResponseDto> getAllProducts() {
-        return productRepository.findAll().stream()
+        List<Product> products = productRepository.findAll();
+        return products.stream()
                 .map(this::mapEntityToDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ProductResponseDto> getProductsByType(ProductType type) {
-        return productRepository.findByType(type).stream()
-                .map(this::mapEntityToDto)
-                .collect(Collectors.toList());
+    public ProductResponseDto getProductById(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        return mapEntityToDto(product);
     }
 
     @Override
-    public ProductResponseDto updateProduct(Long id, ProductRequestDto requestDto,
-                                            MultipartFile productImage,
+    public ProductResponseDto updateProduct(Long id, ProductRequestDto productDto,
+                                            MultipartFile mainImage,
                                             MultipartFile subImage1,
                                             MultipartFile subImage2,
                                             MultipartFile subImage3,
-                                            MultipartFile video) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                                            MultipartFile subImage4) {
 
-        mapDtoToEntity(requestDto, entity);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 
+        mapDtoToEntity(productDto, product);
+
+        // Handle images
         try {
-            if (productImage != null && !productImage.isEmpty()) {
-                entity.setProductImage(productImage.getBytes());
+            if (mainImage != null && !mainImage.isEmpty()) {
+                product.setMainImage(mainImage.getBytes());
             }
             if (subImage1 != null && !subImage1.isEmpty()) {
-                entity.setSubImage1(subImage1.getBytes());
+                product.setSubImage1(subImage1.getBytes());
             }
             if (subImage2 != null && !subImage2.isEmpty()) {
-                entity.setSubImage2(subImage2.getBytes());
+                product.setSubImage2(subImage2.getBytes());
             }
             if (subImage3 != null && !subImage3.isEmpty()) {
-                entity.setSubImage3(subImage3.getBytes());
+                product.setSubImage3(subImage3.getBytes());
             }
-            if (video != null && !video.isEmpty()) {
-                entity.setVideo(video.getBytes());
+            if (subImage4 != null && !subImage4.isEmpty()) {
+                product.setSubImage4(subImage4.getBytes());
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error processing files", e);
+            throw new RuntimeException("Error processing image files", e);
         }
 
-        ProductEntity updatedEntity = productRepository.save(entity);
-        return mapEntityToDto(updatedEntity);
+        // Handle categories
+        if (productDto.getCategoryIds() != null && !productDto.getCategoryIds().isEmpty()) {
+            Set<Category> categories = new HashSet<>(categoryRepository.findAllById(productDto.getCategoryIds()));
+            product.setCategories(categories);
+        }
+
+        Product savedProduct = productRepository.save(product);
+        return mapEntityToDto(savedProduct);
     }
 
     @Override
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        productRepository.delete(product);
     }
 
     @Override
-    public byte[] getProductImage(Long id) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return entity.getProductImage();
+    public List<ProductResponseDto> getProductsByType(ProductType productType) {
+        List<Product> products = productRepository.findByProductType(productType);
+        return products.stream()
+                .map(this::mapEntityToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public byte[] getSubImage1(Long id) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return entity.getSubImage1();
+    public List<ProductResponseDto> getProductsByCategory(Set<Long> categoryIds) {
+        List<Product> products = productRepository.findByCategoryIds(categoryIds);
+        return products.stream()
+                .map(this::mapEntityToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public byte[] getSubImage2(Long id) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return entity.getSubImage2();
+    public List<ProductResponseDto> getFeaturedProducts() {
+        List<Product> products = productRepository.findByIsFeatured(true);
+        return products.stream()
+                .map(this::mapEntityToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public byte[] getSubImage3(Long id) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return entity.getSubImage3();
+    public byte[] getProductImage(Long productId, String imageType) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+
+        switch (imageType.toLowerCase()) {
+            case "main":
+                return product.getMainImage();
+            case "sub1":
+                return product.getSubImage1();
+            case "sub2":
+                return product.getSubImage2();
+            case "sub3":
+                return product.getSubImage3();
+            case "sub4":
+                return product.getSubImage4();
+            default:
+                throw new RuntimeException("Invalid image type: " + imageType);
+        }
     }
 
-    @Override
-    public byte[] getVideo(Long id) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return entity.getVideo();
-    }
-
-    private void mapDtoToEntity(ProductRequestDto dto, ProductEntity entity) {
-        entity.setType(dto.getType());
-        entity.setProductName(dto.getProductName());
-        entity.setRatings(dto.getRatings());
-        entity.setReviews(dto.getReviews());
-        entity.setProductOldPrice(dto.getProductOldPrice());
-        entity.setProductNewPrice(dto.getProductNewPrice());
-        entity.setWeights(dto.getWeights());
-        entity.setWeightPrices(dto.getWeightPrices());
-        entity.setNameOnCake(dto.getNameOnCake());
-        entity.setOffers(dto.getOffers());
-        entity.setProductContains(dto.getProductContains());
+    private void mapDtoToEntity(ProductRequestDto dto, Product entity) {
+        entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
-        entity.setCareInstructions(dto.getCareInstructions());
-        entity.setSkuNumber(dto.getSkuNumber());
-        entity.setNote(dto.getNote());
+        entity.setPrice(dto.getPrice());
+        entity.setProductType(dto.getProductType());
+        entity.setRatings(dto.getRatings());
+        entity.setReview(dto.getReview());
+        entity.setOldPrice(dto.getOldPrice());
+        entity.setDiscount(dto.getDiscount());
+        entity.setOffers(dto.getOffers());
+        entity.setKeyHighlights(dto.getKeyHighlights());
+        entity.setWeight(dto.getWeight());
+        entity.setQuantity(dto.getQuantity());
+        entity.setProductDetails(dto.getProductDetails());
+        entity.setCakeDetails(dto.getCakeDetails());
+        entity.setStorageCare(dto.getStorageCare());
+        entity.setIngredients(dto.getIngredients());
+        entity.setIsAvailable(dto.getIsAvailable());
+        entity.setIsFeatured(dto.getIsFeatured());
     }
 
-    private ProductResponseDto mapEntityToDto(ProductEntity entity) {
+    private ProductResponseDto mapEntityToDto(Product entity) {
         ProductResponseDto dto = new ProductResponseDto();
         dto.setId(entity.getId());
-        dto.setType(entity.getType());
-        dto.setProductName(entity.getProductName());
-        dto.setRatings(entity.getRatings());
-        dto.setReviews(entity.getReviews());
-        dto.setProductOldPrice(entity.getProductOldPrice());
-        dto.setProductNewPrice(entity.getProductNewPrice());
-        dto.setWeights(entity.getWeights());
-        dto.setWeightPrices(entity.getWeightPrices());
-        dto.setNameOnCake(entity.getNameOnCake());
-        dto.setOffers(entity.getOffers());
-        dto.setProductContains(entity.getProductContains());
+        dto.setName(entity.getName());
         dto.setDescription(entity.getDescription());
-        dto.setCareInstructions(entity.getCareInstructions());
-        dto.setSkuNumber(entity.getSkuNumber());
-        dto.setNote(entity.getNote());
-        dto.setHasProductImage(entity.getProductImage() != null);
-        dto.setHasSubImage1(entity.getSubImage1() != null);
-        dto.setHasSubImage2(entity.getSubImage2() != null);
-        dto.setHasSubImage3(entity.getSubImage3() != null);
-        dto.setHasVideo(entity.getVideo() != null);
+        dto.setPrice(entity.getPrice());
+        dto.setProductType(entity.getProductType());
+        dto.setRatings(entity.getRatings());
+        dto.setReview(entity.getReview());
+        dto.setOldPrice(entity.getOldPrice());
+        dto.setDiscount(entity.getDiscount());
+        dto.setOffers(entity.getOffers());
+        dto.setKeyHighlights(entity.getKeyHighlights());
+        dto.setWeight(entity.getWeight());
+        dto.setQuantity(entity.getQuantity());
+        dto.setProductDetails(entity.getProductDetails());
+        dto.setCakeDetails(entity.getCakeDetails());
+        dto.setStorageCare(entity.getStorageCare());
+        dto.setIngredients(entity.getIngredients());
+        dto.setIsAvailable(entity.getIsAvailable());
+        dto.setIsFeatured(entity.getIsFeatured());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+
+        // Convert images to Base64
+        if (entity.getMainImage() != null) {
+            dto.setMainImageBase64(Base64.getEncoder().encodeToString(entity.getMainImage()));
+        }
+        if (entity.getSubImage1() != null) {
+            dto.setSubImage1Base64(Base64.getEncoder().encodeToString(entity.getSubImage1()));
+        }
+        if (entity.getSubImage2() != null) {
+            dto.setSubImage2Base64(Base64.getEncoder().encodeToString(entity.getSubImage2()));
+        }
+        if (entity.getSubImage3() != null) {
+            dto.setSubImage3Base64(Base64.getEncoder().encodeToString(entity.getSubImage3()));
+        }
+        if (entity.getSubImage4() != null) {
+            dto.setSubImage4Base64(Base64.getEncoder().encodeToString(entity.getSubImage4()));
+        }
+
+        // Map categories
+        if (entity.getCategories() != null) {
+            Set<CategoryResponseDto> categoryDtos = entity.getCategories().stream()
+                    .map(this::mapCategoryToDto)
+                    .collect(Collectors.toSet());
+            dto.setCategories(categoryDtos);
+        }
+
+        return dto;
+    }
+
+    private CategoryResponseDto mapCategoryToDto(Category entity) {
+        CategoryResponseDto dto = new CategoryResponseDto();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setType(entity.getType());
+        dto.setDescription(entity.getDescription());
+        dto.setIcon(entity.getIcon());
         return dto;
     }
 }

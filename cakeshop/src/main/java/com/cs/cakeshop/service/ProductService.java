@@ -6,30 +6,34 @@ import com.cs.cakeshop.enums.ProductType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ProductService {
-    ProductResponseDto createProduct(ProductRequestDto requestDto,
-                                     MultipartFile productImage,
+    ProductResponseDto createProduct(ProductRequestDto productDto,
+                                     MultipartFile mainImage,
                                      MultipartFile subImage1,
                                      MultipartFile subImage2,
                                      MultipartFile subImage3,
-                                     MultipartFile video);
+                                     MultipartFile subImage4);
+
+    List<ProductResponseDto> getAllProducts();
 
     ProductResponseDto getProductById(Long id);
-    List<ProductResponseDto> getAllProducts();
-    List<ProductResponseDto> getProductsByType(ProductType type);
 
-    ProductResponseDto updateProduct(Long id, ProductRequestDto requestDto,
-                                     MultipartFile productImage,
+    ProductResponseDto updateProduct(Long id, ProductRequestDto productDto,
+                                     MultipartFile mainImage,
                                      MultipartFile subImage1,
                                      MultipartFile subImage2,
                                      MultipartFile subImage3,
-                                     MultipartFile video);
+                                     MultipartFile subImage4);
 
     void deleteProduct(Long id);
-    byte[] getProductImage(Long id);
-    byte[] getSubImage1(Long id);
-    byte[] getSubImage2(Long id);
-    byte[] getSubImage3(Long id);
-    byte[] getVideo(Long id);
+
+    List<ProductResponseDto> getProductsByType(ProductType productType);
+
+    List<ProductResponseDto> getProductsByCategory(Set<Long> categoryIds);
+
+    List<ProductResponseDto> getFeaturedProducts();
+
+    byte[] getProductImage(Long productId, String imageType);
 }

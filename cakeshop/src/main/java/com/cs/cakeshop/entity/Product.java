@@ -1,42 +1,95 @@
-package com.cs.cakeshop.Dto.response;
+package com.cs.cakeshop.entity;
 
 import com.cs.cakeshop.enums.ProductType;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
-public class ProductResponseDto {
+@Entity
+@Table(name = "products")
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(length = 1000)
     private String description;
+
+    @Column(nullable = false)
     private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
     private ProductType productType;
-    private String mainImageBase64;
-    private String subImage1Base64;
-    private String subImage2Base64;
-    private String subImage3Base64;
-    private String subImage4Base64;
-    private Double ratings;
+
+    @Lob
+    @Column(name = "main_image", columnDefinition = "LONGBLOB")
+    private byte[] mainImage;
+
+    @Lob
+    @Column(name = "sub_image1", columnDefinition = "LONGBLOB")
+    private byte[] subImage1;
+
+    @Lob
+    @Column(name = "sub_image2", columnDefinition = "LONGBLOB")
+    private byte[] subImage2;
+
+    @Lob
+    @Column(name = "sub_image3", columnDefinition = "LONGBLOB")
+    private byte[] subImage3;
+
+    @Lob
+    @Column(name = "sub_image4", columnDefinition = "LONGBLOB")
+    private byte[] subImage4;
+
+    private Double ratings = 0.0;
     private String review;
     private BigDecimal oldPrice;
-    private Integer discount;
+    private Integer discount = 0;
     private String offers;
     private String keyHighlights;
     private String weight;
-    private Integer quantity;
+    private Integer quantity = 1;
     private String productDetails;
     private String cakeDetails;
     private String storageCare;
     private String ingredients;
-    private Boolean isAvailable;
-    private Boolean isFeatured;
-    private Set<CategoryResponseDto> categories;
+
+    private Boolean isAvailable = true;
+    private Boolean isFeatured = false;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "product_categories",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
     // Constructors
-    public ProductResponseDto() {}
+    public Product() {}
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -54,20 +107,20 @@ public class ProductResponseDto {
     public ProductType getProductType() { return productType; }
     public void setProductType(ProductType productType) { this.productType = productType; }
 
-    public String getMainImageBase64() { return mainImageBase64; }
-    public void setMainImageBase64(String mainImageBase64) { this.mainImageBase64 = mainImageBase64; }
+    public byte[] getMainImage() { return mainImage; }
+    public void setMainImage(byte[] mainImage) { this.mainImage = mainImage; }
 
-    public String getSubImage1Base64() { return subImage1Base64; }
-    public void setSubImage1Base64(String subImage1Base64) { this.subImage1Base64 = subImage1Base64; }
+    public byte[] getSubImage1() { return subImage1; }
+    public void setSubImage1(byte[] subImage1) { this.subImage1 = subImage1; }
 
-    public String getSubImage2Base64() { return subImage2Base64; }
-    public void setSubImage2Base64(String subImage2Base64) { this.subImage2Base64 = subImage2Base64; }
+    public byte[] getSubImage2() { return subImage2; }
+    public void setSubImage2(byte[] subImage2) { this.subImage2 = subImage2; }
 
-    public String getSubImage3Base64() { return subImage3Base64; }
-    public void setSubImage3Base64(String subImage3Base64) { this.subImage3Base64 = subImage3Base64; }
+    public byte[] getSubImage3() { return subImage3; }
+    public void setSubImage3(byte[] subImage3) { this.subImage3 = subImage3; }
 
-    public String getSubImage4Base64() { return subImage4Base64; }
-    public void setSubImage4Base64(String subImage4Base64) { this.subImage4Base64 = subImage4Base64; }
+    public byte[] getSubImage4() { return subImage4; }
+    public void setSubImage4(byte[] subImage4) { this.subImage4 = subImage4; }
 
     public Double getRatings() { return ratings; }
     public void setRatings(Double ratings) { this.ratings = ratings; }
@@ -111,8 +164,8 @@ public class ProductResponseDto {
     public Boolean getIsFeatured() { return isFeatured; }
     public void setIsFeatured(Boolean isFeatured) { this.isFeatured = isFeatured; }
 
-    public Set<CategoryResponseDto> getCategories() { return categories; }
-    public void setCategories(Set<CategoryResponseDto> categories) { this.categories = categories; }
+    public Set<Category> getCategories() { return categories; }
+    public void setCategories(Set<Category> categories) { this.categories = categories; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

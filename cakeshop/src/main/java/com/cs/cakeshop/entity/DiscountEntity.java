@@ -1,0 +1,95 @@
+package com.cs.cakeshop.entity;
+
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Entity
+@Table(name = "discounts")
+public class DiscountEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String discountCode;
+
+    private String description;
+    private String discountType;
+    private Double discountValue;
+    private Double minimumOrderAmount;
+    private Double maximumDiscountAmount;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String applicabilityType;
+
+    @ElementCollection
+    @CollectionTable(name = "discount_categories", joinColumns = @JoinColumn(name = "discount_id"))
+    @Column(name = "category")
+    private List<String> categories;
+
+    private Integer usageLimit;
+    private String status;
+
+    // Constructors
+    public DiscountEntity() {}
+
+    public DiscountEntity(String discountCode, String description, String discountType,
+                          Double discountValue, Double minimumOrderAmount, Double maximumDiscountAmount,
+                          LocalDate startDate, LocalDate endDate, String applicabilityType,
+                          List<String> categories, Integer usageLimit, String status) {
+        this.discountCode = discountCode;
+        this.description = description;
+        this.discountType = discountType;
+        this.discountValue = discountValue;
+        this.minimumOrderAmount = minimumOrderAmount;
+        this.maximumDiscountAmount = maximumDiscountAmount;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.applicabilityType = applicabilityType;
+        this.categories = categories;
+        this.usageLimit = usageLimit;
+        this.status = status;
+    }
+
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getDiscountCode() { return discountCode; }
+    public void setDiscountCode(String discountCode) { this.discountCode = discountCode; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getDiscountType() { return discountType; }
+    public void setDiscountType(String discountType) { this.discountType = discountType; }
+
+    public Double getDiscountValue() { return discountValue; }
+    public void setDiscountValue(Double discountValue) { this.discountValue = discountValue; }
+
+    public Double getMinimumOrderAmount() { return minimumOrderAmount; }
+    public void setMinimumOrderAmount(Double minimumOrderAmount) { this.minimumOrderAmount = minimumOrderAmount; }
+
+    public Double getMaximumDiscountAmount() { return maximumDiscountAmount; }
+    public void setMaximumDiscountAmount(Double maximumDiscountAmount) { this.maximumDiscountAmount = maximumDiscountAmount; }
+
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+
+    public String getApplicabilityType() { return applicabilityType; }
+    public void setApplicabilityType(String applicabilityType) { this.applicabilityType = applicabilityType; }
+
+    public List<String> getCategories() { return categories; }
+    public void setCategories(List<String> categories) { this.categories = categories; }
+
+    public Integer getUsageLimit() { return usageLimit; }
+    public void setUsageLimit(Integer usageLimit) { this.usageLimit = usageLimit; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+}
